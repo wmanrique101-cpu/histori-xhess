@@ -1,0 +1,11 @@
+{
+  "name": "historychess",
+  "version": "1.0.0",
+  "description": "Plataforma interactiva de historia y evolución del ajedrez.",
+  "scripts": {
+    "start": "npx serve -l 8080",
+    "dev": "npx live-server"
+  },
+  "author": "Ivsamma",
+  "license": "MIT"
+}

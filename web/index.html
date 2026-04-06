@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Historia Viva del Ajedrez</title>
+    <!-- Estética tipográfica y reset -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Carga de Ajedrez FIDE Lógica (chess.js) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+
+    <!-- React, Babel y Tailwind (Modo integrado sin colisiones) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            corePlugins: { preflight: false },
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        egyptian: { gold: '#d4af37', sand: '#ecdcb6', clay: '#b06a4b', bg: '#1a1310' },
+                        oriental: { wood: '#8b5a2b', board: '#dcb35c', dark: '#1a1412' }
+                    }
+                }
+            }
+        }
+    </script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+
+<body class="dark">
+
+    <!-- ================= SPLASH SCREEN ================= -->
+    <div id="splash-screen" class="splash-modal active">
+        <!-- Imagen en la parte inferior izquierda -->
+        <img src="logo.png" alt="Logo Graffiti IS" class="splash-logo-is">
+
+        <div class="splash-content parchment-box splash-expanded">
+            <h1 class="ancient-title">Historia del Ajedrez</h1>
+            <p class="ancient-subtitle">Explora el origen de los reyes, sabios y guerreros a través del tablero.</p>
+
+            <div class="splash-options">
+                <div class="splash-column">
+                    <h3 class="column-title">Viajero Sin Registro</h3>
+                    <p class="column-desc">Ingresa directamente y explora los tableros de antaño como invitado.</p>
+                    <button id="btn-enter-guest" class="btn-rustic">Entrar como Invitado</button>
+                </div>
+
+                <div class="splash-divider"></div>
+
+                <div class="splash-column login-section">
+                    <h3 class="column-title">Identifícate, Erudito</h3>
+                    <p class="column-desc">Inicia sesión para guardar tu progreso y registros de batalla.</p>
+                    <form id="login-form" class="rustic-form">
+                        <div class="input-group">
+                            <label for="username">Nombre de Usuario:</label>
+                            <input type="text" id="username" required placeholder="Ej: ReySabio99">
+                        </div>
+                        <div class="input-group">
+                            <label for="password">Contraseña (Mágica):</label>
+                            <input type="password" id="password" required placeholder="••••••••">
+                        </div>
+                        <p id="login-error" class="error-msg hidden">Credenciales inválidas.</p>
+                        <button type="submit" id="btn-login" class="btn-rustic btn-gold">Iniciar Sesión</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= CONTENEDOR PRINCIPAL ================= -->
+    <div class="main-container hidden" id="main-content">
+
+        <!-- HEADER Y NAVEGACIÓN -->
+        <header class="wood-header relative">
+            <div class="flex items-center gap-4">
+                <h2 class="header-logo">HISTORIAS</h2>
+                <div class="style-switcher-container group relative">
+                    <button
+                        class="invisible-btn opacity-0 group-hover:opacity-100 transition-opacity bg-stone-800/80 p-2 rounded border border-stone-700 text-xs text-stone-400 hover:text-white hover:bg-stone-700">
+                        Estilo </button>
+                    <div
+                        class="style-menu hidden group-hover:block absolute top-full left-0 mt-2 bg-stone-900 border border-stone-700 rounded shadow-2xl z-[100] min-w-[150px] p-2">
+                        <h4 class="text-[8px] uppercase tracking-widest text-stone-600 mb-2 px-2">Cambiar Atmósfera</h4>
+                        <button class="theme-btn w-full text-left p-2 hover:bg-stone-800 rounded text-xs text-stone-300"
+                            data-theme="old">Antiguo</button>
+                        <button class="theme-btn w-full text-left p-2 hover:bg-stone-800 rounded text-xs text-stone-300"
+                            data-theme="future">Futurista</button>
+                        <button class="theme-btn w-full text-left p-2 hover:bg-stone-800 rounded text-xs text-stone-300"
+                            data-theme="neutral">Neutral</button>
+                    </div>
+                </div>
+            </div>
+            <nav class="tabs-nav">
+                <button class="tab-btn active" data-tab="tab-welcome">Bienvenida</button>
+
+                <button class="tab-btn" data-tab="tab-classic">Ajedrez Clásico</button>
+                <div class="dropdown">
+                    <button class="tab-btn">Ancestros y Variantes </button>
+                    <div class="dropdown-content">
+                        <a href="#" class="tab-btn-sub" data-tab="tab-senet">Senet (Egipto)</a>
+                        <a href="#" class="tab-btn-sub" data-tab="tab-chaturanga">Go (China)</a>
+                        <a href="#" class="tab-btn-sub" data-tab="tab-xiangqi">Xiangqi (China)</a>
+                        <a href="#" class="tab-btn-sub" data-tab="tab-shogi">Shogi (Japón)</a>
+                        <a href="#" class="tab-btn-sub" data-tab="tab-checkers">Damas (FMJD)</a>
+                    </div>
+                </div>
+                <button class="tab-btn" data-tab="tab-evolution">Evolución de Piezas</button>
+            </nav>
+        </header>
+
+        <!-- ================= PESTAÑAS (TABS) ================= -->
+        <main class="content-area">
+
+            <!-- 0. BIENVENIDA -->
+            <div id="tab-welcome" class="tab-panel active parchment-bg">
+                <div class="welcome-container">
+                    <div class="welcome-header">
+                        <h1 class="welcome-title">Bienvenido, Viajero del Tiempo</h1>
+                        <p class="welcome-subtitle">Has llegado a la encrucijada de los juegos de estrategia. Aquí, el
+                            pasado y el futuro se encuentran en el tablero.</p>
+                    </div>
+
+                    <div class="welcome-grid">
+                        <!-- Tarjeta 1: Ajedrez Clásico -->
+                        <div class="welcome-card">
+                            <div class="card-icon">♟️</div>
+                            <h2 class="card-title">Ajedrez Clásico</h2>
+                            <p class="card-desc">Enfréntate a la inteligencia artificial más potente o desafía a un
+                                amigo en la versión milenaria del juego.</p>
+                            <button class="card-btn" onclick="switchTab('tab-classic')">Explorar Ajedrez</button>
+                        </div>
+
+                        <!-- Tarjeta 2: Ancestros -->
+                        <div class="welcome-card">
+                            <h2 class="card-title">Ancestros y Variantes</h2>
+                            <p class="card-desc">Viaja a las raíces del ajedrez. Descubre el Senet egipcio, el Go
+                                chino y otras variantes históricas.</p>
+                            <button class="card-btn" onclick="switchTab('tab-ancestors')">Ver Variantes</button>
+                        </div>
+
+                        <!-- Tarjeta 3: Evolución -->
+                        <div class="welcome-card">
+                            <div class="card-icon"></div>
+                            <h2 class="card-title">Evolución de Piezas</h2>
+                            <p class="card-desc">Observa cómo las piezas han cambiado a lo largo de los siglos. Una
+                                lección visual de historia y estrategia.</p>
+                            <button class="card-btn" onclick="switchTab('tab-evolution')">Ver Evolución</button>
+                        </div>
+                    </div>
+
+                    <div class="welcome-footer">
+                        <p class="footer-text">Recuerda: Cada movimiento cuenta una historia.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 1. AJEDREZ CLÁSICO (FIDE vs STOCKFISH) -->
+            <div id="tab-classic" class="tab-panel active parchment-bg">
+                <div class="split-layout">
+                    <div class="board-container">
+                        <div id="fide-board" class="chess-board"></div>
+                    </div>
+                    <div class="panel-sidebar flex flex-col gap-4 w-full md:w-[350px] shrink-0">
+                        <div id="react-classic-panel"></div>
+                        <div class="game-controls">
+                            <button id="btn-new-fide" class="btn-action">Nueva Partida</button>
+                        </div>
+                        <div class="log-container">
+                            <h4>Bitácora:</h4>
+                            <ul id="fide-log" class="move-log"></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. SENET -->
+            <div id="tab-senet" class="tab-panel hidden"
+                style="padding: 0; background: transparent; border: none; box-shadow: none; max-width: 100%;">
+                <div id="react-senet-root"></div>
+            </div>
+
+            <!-- 3. GO  -->
+            <div id="tab-chaturanga" class="tab-panel hidden"
+                style="padding: 0; background: transparent; border: none; box-shadow: none; max-width: 100%;">
+                <div id="react-go-root"></div>
+            </div>
+
+            <!-- 4. XIANGQI -->
+            <div id="tab-xiangqi" class="tab-panel hidden parchment-bg">
+                <div class="split-layout">
+                    <div class="board-container">
+                        <div id="xiangqi-board" class="xiangqi-game-container"></div>
+                    </div>
+                    <div class="panel-sidebar flex flex-col gap-4 w-full md:w-[350px] shrink-0">
+                        <div id="react-xiangqi-panel"></div>
+                        <div class="game-controls">
+                            <button id="btn-new-xiangqi" class="btn-action">Nueva Partida (Xiangqi)</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. SHOGI -->
+            <div id="tab-shogi" class="tab-panel hidden parchment-bg">
+                <div class="split-layout">
+                    <div class="board-container">
+                        <div id="shogi-board" class="shogi-game-container"></div>
+                    </div>
+                    <div class="panel-sidebar flex flex-col gap-4 w-full md:w-[350px] shrink-0">
+                        <div id="react-shogi-panel"></div>
+                        <div class="game-controls">
+                            <button id="btn-new-shogi" class="btn-action">Nueva Partida (Shogi)</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. DAMAS (FMJD) -->
+            <div id="tab-checkers" class="tab-panel hidden parchment-bg">
+                <div class="split-layout">
+                    <div class="board-container">
+                        <div class="draughts-container">
+                            <div id="draughts-board" class="draughts-board"></div>
+                        </div>
+                    </div>
+                    <div class="panel-sidebar flex flex-col gap-4 w-full md:w-[350px] shrink-0">
+                        <div id="react-checkers-panel"></div>
+                        <div class="game-controls">
+                            <button id="btn-new-draughts" class="btn-action">Nueva Partida (Damas)</button>
+                        </div>
+                        <h4 id="draughts-turn-indicator"
+                            style="margin-top:20px; color: var(--color-maroon); text-align:center;">Turno: Blancas ⬜
+                        </h4>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 7. EVOLUCIÓN DIDÁCTICA -->
+            <div id="tab-evolution" class="tab-panel hidden parchment-bg">
+                <div class="evolution-gallery">
+                    <h2 class="section-title">La Metamorfosis de la Guerra</h2>
+                    <div class="timeline">
+                        <div class="time-card animate-card">
+                            <div class="icon">♗</div>
+                            <h4 class="card-title">El obispo: Alfil</h4>
+                            <p class="card-text">Del torpe salto hindú del Gaja, evolucionó en Europa al Obispo, ganando
+                                el control absoluto y fulminante de las diagonales.</p>
+                            <button class="btn-read-more" data-piece="bishop">Ver más</button>
+                        </div>
+                        <div class="time-card animate-card">
+                            <div class="icon">♕</div>
+                            <h4 class="card-title">El visir: Reina</h4>
+                            <p class="card-text">Pasó de ser un consejero masculino débil a encarnar la fuerza de las
+                                grandes monarcas del Renacimiento como el poder absoluto.</p>
+                            <button class="btn-read-more" data-piece="queen">Ver más</button>
+                        </div>
+                        <div class="time-card animate-card">
+                            <div class="icon">♖</div>
+                            <h4 class="card-title">El Elefante: Torre</h4>
+                            <p class="card-text">El heroico carro alado persa se transformó, por error semántico, en un
+                                sólido baluarte defensivo en la Europa medieval.</p>
+                            <button class="btn-read-more" data-piece="rook">Ver más</button>
+                        </div>
+                        <div class="time-card animate-card">
+                            <div class="icon">♙</div>
+                            <h4 class="card-title">El Soldado: El Peón</h4>
+                            <p class="card-text">La infantería del tablero. Desde el humilde Padati hindú hasta el peón
+                                moderno, guarda consigo el sueño de ser coronado Rey.</p>
+                            <button class="btn-read-more" data-piece="pawn">Ver más</button>
+                        </div>
+                        <div class="time-card animate-card">
+                            <div class="icon">♘</div>
+                            <h4 class="card-title">El Caballero y su "L"</h4>
+                            <p class="card-text">El único guerrero que salta obstáculos. Su movimiento en "L" es la
+                                única regla que no ha cambiado en 15 siglos de historia.</p>
+                            <button class="btn-read-more" data-piece="knight">Ver más</button>
+                        </div>
+                        <div class="time-card animate-card">
+                            <div class="icon">♔</div>
+                            <h4 class="card-title">La Importancia del Rey</h4>
+                            <p class="card-text">Del Rajá al Shah, el Rey es el centro del universo del ajedrez. Su
+                                captura es el fin de la guerra: todo combate se libra en su nombre.</p>
+                            <button class="btn-read-more" data-piece="king">Ver más</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- ================= MODAL DETALLE PIEZA ================= -->
+    <div id="piece-modal" class="piece-modal-overlay" role="dialog" aria-modal="true"
+        aria-labelledby="piece-modal-title">
+        <div class="piece-modal-content parchment-bg">
+            <button id="piece-modal-close" class="piece-modal-close" aria-label="Cerrar">&times;</button>
+            <h3 id="piece-modal-title" class="piece-modal-title">Título</h3>
+            <div class="piece-modal-body">
+                <!-- IZQUIERDA: Tablero demo -->
+                <div class="piece-modal-board-wrap">
+                    <p class="board-label">Ejemplo de movimiento</p>
+                    <div id="piece-demo-board" class="piece-demo-board chess-board"></div>
+                </div>
+                <!-- DERECHA: Contexto extendido -->
+                <div class="piece-modal-context rustic-panel">
+                    <h4 class="piece-modal-context-title">Contexto Histórico</h4>
+                    <p id="piece-modal-context-text" class="info-text"></p>
+                    <hr class="divider-sepia">
+                    <h4 class="piece-modal-context-title">Movimiento</h4>
+                    <p id="piece-modal-move-text" class="info-text"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script para detectar si están abriendo el archivo sin servidor -->
+    <script>
+        if (window.location.protocol === 'file:') {
+            alert('¡Hola! Estás abriendo el archivo directamente (file://). Las funciones modernas de JavaScript (como el inicio de sesión) requieren un servidor local por seguridad del navegador. Por favor, abre tu proyecto usando la extensión "Live Server" de VSCode u otro servidor local.');
+        }
+    </script>
+    <!-- Carga del Motor Vanilla y el UI React -->
+    <script type="module" src="src/app.js?v=4"></script>
+    <script type="text/babel" src="src/estile juegos.jsx"></script>
+</body>
+
+</html>
